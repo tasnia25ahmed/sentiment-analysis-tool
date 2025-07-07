@@ -13,6 +13,10 @@ const InputForm = () => {
   const [rawScores, setRawScores] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Store label and numeric score separately for meter bar
+  const [topLabel, setTopLabel] = useState("");
+  const [topScore, setTopScore] = useState(0);
+
   const API_URL =
     "https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment";
   const API_TOKEN = process.env.REACT_APP_HUGGINGFACE_API_TOKEN;
@@ -57,14 +61,22 @@ const InputForm = () => {
         return;
       }
 
+      // Sort descending by score
       const sorted = [...data].sort((a, b) => b.score - a.score);
       const top = sorted[0];
 
-      const topLabel = labelMap[top.label] || "Unknown";
-      const topScore = (top.score * 100).toFixed(2);
+      const detectedLabel = labelMap[top.label] || "Unknown";
 
-      setSentiment(`${topLabel} (${topScore}%)`);
+      // Parse to number here, no '%'
+      const detectedScore = parseFloat((top.score * 100).toFixed(2));
 
+      // Set sentiment text WITHOUT percentage (avoid double %)
+      setSentiment(detectedLabel);
+
+      setTopLabel(detectedLabel);
+      setTopScore(detectedScore);
+
+      // Format scores for pie chart
       const formattedScores = sorted.map((item) => ({
         name: labelMap[item.label] || item.label || "Unknown",
         value: parseFloat((item.score * 100).toFixed(2)),
@@ -98,14 +110,17 @@ const InputForm = () => {
   return (
     <div className="container p-4 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-center">Sentiment Analysis Tool</h1>
+<div className="w-full max-w-md mx-auto">
+  <TextInput
+    value={text}
+    onChange={(e) => setText(e.target.value)}
+    placeholder="Enter text here..."
+    id="text-input"
+    name="text"
+    className="w-full"
+  />
+</div>
 
-      <TextInput
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Enter text here..."
-        id="text-input"
-        name="text"
-      />
 
       <div className="flex justify-center space-x-4 mt-4">
         <Button className="button-primary" onClick={handleAnalyze}>
@@ -118,7 +133,7 @@ const InputForm = () => {
 
       {loading && <p className="mt-4 text-center">Analyzing sentiment, please wait...</p>}
 
-      <SentimentDisplay sentiment={sentiment} />
+      <SentimentDisplay sentiment={sentiment} topLabel={topLabel} topScore={topScore} />
 
       {rawScores.length > 0 && (
         <div className="mt-6">

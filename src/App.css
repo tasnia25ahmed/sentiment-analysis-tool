@@ -34,13 +34,15 @@ body, html, #root, .App {
   box-shadow: 0 10px 15px rgba(0,0,0,0.1);
 }
 .textarea {
-  width: 100%; /* safer with responsive layouts */
+   width: 100%;             /* Take full width of the container */
+  max-width: 500px;        /* Set a comfortable max width */
+  min-height: 100px;       /* Set minimum height so it's not too short */
   padding: 1rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 1rem;
   font-size: 1rem;
+  margin-bottom: 1rem;
 }
 
 .button {
@@ -72,3 +74,19 @@ body, html, #root, .App {
 .button-secondary:hover {
   background-color: #15803d;
 }
+.progress-container {
+  width: 100%;
+  max-width: 300px;
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 16px;
+  margin: 10px auto;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
