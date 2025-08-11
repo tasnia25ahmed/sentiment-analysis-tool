@@ -6,6 +6,7 @@ import SentimentDisplay from "./SentimentDisplay";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 const COLORS = ["#FF4D4F", "#FAAD14", "#52C41A"];
+debugger;
 const API_BASE = "http://localhost:8000";
 
 const InputForm = () => {
@@ -22,6 +23,7 @@ const InputForm = () => {
   }, []);
 
   const fetchHistory = async () => {
+    debugger;
     try {
       const res = await axios.get(`${API_BASE}/history`);
       setHistory(res.data);
