@@ -2,7 +2,7 @@ import requests
 import os
 
 API_URL = "https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment"
-API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
+API_TOKEN = os.getenv("REACT_APP_HUGGINGFACE_API_TOKEN")
 headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
 label_map = {
