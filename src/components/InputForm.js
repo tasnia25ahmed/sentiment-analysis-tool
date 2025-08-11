@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import TextInput from "./TextInput";
 import Button from "./Button";
@@ -6,83 +6,49 @@ import SentimentDisplay from "./SentimentDisplay";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 const COLORS = ["#FF4D4F", "#FAAD14", "#52C41A"];
+const API_BASE = "http://localhost:8000";
 
 const InputForm = () => {
   const [text, setText] = useState("");
   const [sentiment, setSentiment] = useState(null);
   const [rawScores, setRawScores] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Store label and numeric score separately for meter bar
   const [topLabel, setTopLabel] = useState("");
   const [topScore, setTopScore] = useState(0);
+  const [history, setHistory] = useState([]);
 
-  const API_URL =
-    "https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment";
-  const API_TOKEN = process.env.REACT_APP_HUGGINGFACE_API_TOKEN;
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
-  const labelMap = {
-    LABEL_0: "Negative",
-    LABEL_1: "Neutral",
-    LABEL_2: "Positive",
+  const fetchHistory = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/history`);
+      setHistory(res.data);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+    }
   };
 
   const handleAnalyze = async () => {
-    if (!API_TOKEN) {
-      console.error("Missing Hugging Face API token");
-      setSentiment("API token not set. Please check your .env file.");
-      return;
-    }
-
     if (!text.trim()) {
       setSentiment("Please enter some text to analyze.");
       return;
     }
 
     setLoading(true);
-
     try {
-      const response = await axios.post(
-        API_URL,
-        { inputs: text },
-        {
-          headers: {
-            Authorization: `Bearer ${API_TOKEN}`,
-          },
-        }
-      );
+      const response = await axios.post(`${API_BASE}/analyze`, { text });
+      const { sentiment, scores } = response.data;
 
-      const data = response.data[0];
+      setSentiment(sentiment);
+      setTopLabel(sentiment);
 
-      if (!Array.isArray(data) || !data[0]) {
-        setSentiment("No sentiment detected.");
-        setRawScores([]);
-        setLoading(false);
-        return;
-      }
+      const top = scores[0];
+      setTopScore(top.value);
+      setRawScores(scores);
 
-      // Sort descending by score
-      const sorted = [...data].sort((a, b) => b.score - a.score);
-      const top = sorted[0];
-
-      const detectedLabel = labelMap[top.label] || "Unknown";
-
-      // Parse to number here, no '%'
-      const detectedScore = parseFloat((top.score * 100).toFixed(2));
-
-      // Set sentiment text WITHOUT percentage (avoid double %)
-      setSentiment(detectedLabel);
-
-      setTopLabel(detectedLabel);
-      setTopScore(detectedScore);
-
-      // Format scores for pie chart
-      const formattedScores = sorted.map((item) => ({
-        name: labelMap[item.label] || item.label || "Unknown",
-        value: parseFloat((item.score * 100).toFixed(2)),
-      }));
-
-      setRawScores(formattedScores);
+      await fetchHistory();
     } catch (error) {
       console.error("Error analyzing sentiment:", error);
       setSentiment("Error analyzing sentiment.");
@@ -110,25 +76,18 @@ const InputForm = () => {
   return (
     <div className="container p-4 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-center">Sentiment Analysis Tool</h1>
-<div className="w-full max-w-md mx-auto">
-  <TextInput
-    value={text}
-    onChange={(e) => setText(e.target.value)}
-    placeholder="Enter text here..."
-    id="text-input"
-    name="text"
-    className="w-full"
-  />
-</div>
 
+      <div className="w-full max-w-md mx-auto">
+        <TextInput
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Enter text here..."
+        />
+      </div>
 
       <div className="flex justify-center space-x-4 mt-4">
-        <Button className="button-primary" onClick={handleAnalyze}>
-          Analyze
-        </Button>
-        <Button className="button-secondary" onClick={startVoiceInput}>
-          Speak
-        </Button>
+        <Button onClick={handleAnalyze}>Analyze</Button>
+        <Button onClick={startVoiceInput}>Speak</Button>
       </div>
 
       {loading && <p className="mt-4 text-center">Analyzing sentiment, please wait...</p>}
@@ -164,6 +123,38 @@ const InputForm = () => {
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
+        </div>
+      )}
+
+      {history.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-2">Recent Analyses:</h3>
+          <ul className="space-y-2">
+            {history.map((item, idx) => (
+              <li
+                key={idx}
+                className="border p-2 rounded shadow-sm flex justify-between items-center"
+              >
+                <div>
+                  <p className="text-sm text-gray-700">{item.text}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(item.timestamp).toLocaleString()}
+                  </p>
+                </div>
+                <span
+                  className={`px-2 py-1 rounded text-white text-xs ${
+                    item.sentiment === "Positive"
+                      ? "bg-green-500"
+                      : item.sentiment === "Negative"
+                      ? "bg-red-500"
+                      : "bg-yellow-500"
+                  }`}
+                >
+                  {item.sentiment}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
