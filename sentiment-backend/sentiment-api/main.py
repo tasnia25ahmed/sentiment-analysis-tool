@@ -1,28 +1,33 @@
 from fastapi import FastAPI, Depends
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-
+from sqlalchemy.orm import Session
 from models import SessionLocal, Review
-from sentiment import get_sentiment
 
-# Start FastAPI app
+
+from sentiment import get_sentiment
+from pydantic import BaseModel  # needed if defining ReviewRequest here
+
 app = FastAPI()
 
-# Allow frontend (React) to access backend
+# Allow React frontend
+origins = [
+    "http://localhost:3000",  # React dev server
+    # later add your production frontend URL
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Your React frontend
+    allow_origins=origins,  
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"],  
 )
 
-# Input format for /analyze
+# If you want to define ReviewRequest here (otherwise remove)
 class ReviewRequest(BaseModel):
     text: str
 
-# Get a database session
+# Dependency: get DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -30,17 +35,22 @@ def get_db():
     finally:
         db.close()
 
-# POST /analyze: analyze a review and save to DB
+# POST /analyze
 @app.post("/analyze")
 def analyze_review(review: ReviewRequest, db: Session = Depends(get_db)):
-    sentiment = get_sentiment(review.text)
+    sentiment, scores = get_sentiment(review.text)
+
     new_review = Review(text=review.text, sentiment=sentiment)
     db.add(new_review)
     db.commit()
     db.refresh(new_review)
-    return {"sentiment": sentiment}
 
-# GET /history: return recent 10 results
+    return {
+        "sentiment": sentiment,
+        "scores": scores
+    }
+
+# GET /history
 @app.get("/history")
 def get_history(db: Session = Depends(get_db)):
     reviews = db.query(Review).order_by(Review.timestamp.desc()).limit(10).all()
@@ -49,5 +59,6 @@ def get_history(db: Session = Depends(get_db)):
             "text": r.text,
             "sentiment": r.sentiment,
             "timestamp": r.timestamp.isoformat()
-        } for r in reviews
+        }
+        for r in reviews
     ]
