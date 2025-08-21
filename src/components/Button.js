@@ -1,9 +1,9 @@
 import React from "react";
-
+debugger;
 const Button = ({ onClick, children, className }) => {
   return (
     <button
-      className={"button " + className}
+      className={"button mx-2 " + className}
       onClick={onClick}
     >
       {children}

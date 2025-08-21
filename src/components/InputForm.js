@@ -7,8 +7,8 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 const COLORS = ["#FF4D4F", "#FAAD14", "#52C41A"];
 debugger;
-const API_BASE = "http://localhost:8000";
-
+const API_BASE = "http://127.0.0.1:8000";
+debugger;
 const InputForm = () => {
   const [text, setText] = useState("");
   const [sentiment, setSentiment] = useState(null);
@@ -17,11 +17,11 @@ const InputForm = () => {
   const [topLabel, setTopLabel] = useState("");
   const [topScore, setTopScore] = useState(0);
   const [history, setHistory] = useState([]);
-
+debugger;
   useEffect(() => {
     fetchHistory();
   }, []);
-
+debugger;
   const fetchHistory = async () => {
     debugger;
     try {
@@ -31,7 +31,7 @@ const InputForm = () => {
       console.error("Error fetching history:", error);
     }
   };
-
+debugger;
   const handleAnalyze = async () => {
     if (!text.trim()) {
       setSentiment("Please enter some text to analyze.");
@@ -59,7 +59,7 @@ const InputForm = () => {
       setLoading(false);
     }
   };
-
+debugger;
   const startVoiceInput = () => {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
@@ -87,10 +87,16 @@ const InputForm = () => {
         />
       </div>
 
-      <div className="flex justify-center space-x-4 mt-4">
-        <Button onClick={handleAnalyze}>Analyze</Button>
-        <Button onClick={startVoiceInput}>Speak</Button>
-      </div>
+<div
+  className="flex"
+  style={{ color: "pink", border: "1px solid white", display:"inline-flex" }}
+>
+  <div>
+  <Button onClick={handleAnalyze}>Analyze</Button>
+  <Button onClick={startVoiceInput}>Speak</Button>
+  </div>
+</div>
+
 
       {loading && <p className="mt-4 text-center">Analyzing sentiment, please wait...</p>}
 

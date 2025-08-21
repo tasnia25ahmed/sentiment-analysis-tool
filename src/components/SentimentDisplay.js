@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-
+debugger;
 const SentimentDisplay = ({ sentiment, topLabel, topScore }) => {
   if (!sentiment) return null;
 
