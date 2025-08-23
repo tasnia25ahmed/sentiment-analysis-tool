@@ -1,9 +1,12 @@
 import React from "react";
-debugger;
-const Button = ({ onClick, children, className }) => {
+
+const Button = ({ onClick, children, className = "", variant = "primary", size = "md" }) => {
+  // Map size prop to Bootstrap size classes
+  const sizeClass = size === "lg" ? "btn-lg" : size === "sm" ? "btn-sm" : "";
+
   return (
     <button
-      className={"button mx-2 " + className}
+      className={`btn btn-${variant} ${sizeClass} ${className} shadow-sm rounded-pill`}
       onClick={onClick}
     >
       {children}
@@ -12,3 +15,4 @@ const Button = ({ onClick, children, className }) => {
 };
 
 export default Button;
+

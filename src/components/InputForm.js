@@ -4,6 +4,7 @@ import TextInput from "./TextInput";
 import Button from "./Button";
 import SentimentDisplay from "./SentimentDisplay";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { FaMicrophone } from "react-icons/fa";
 
 const COLORS = ["#FF4D4F", "#FAAD14", "#52C41A"];
 debugger;
@@ -17,6 +18,8 @@ const InputForm = () => {
   const [topLabel, setTopLabel] = useState("");
   const [topScore, setTopScore] = useState(0);
   const [history, setHistory] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
 debugger;
   useEffect(() => {
     fetchHistory();
@@ -74,97 +77,107 @@ debugger;
       console.error("Speech recognition error:", event.error);
     };
   };
-
-  return (
-    <div className="container p-4 max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-center">Sentiment Analysis Tool</h1>
-
-      <div className="w-full max-w-md mx-auto">
-        <TextInput
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Enter text here..."
-        />
+  
+ 
+ return (
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
+      <div
+        className={`bg-white shadow-lg transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+        style={{ width: "250px", zIndex: 1000 }}
+      >
+        <div className="p-2 flex justify-between items-center border-b">
+          <h3 className="font-semibold text-lg">Recent Analyses</h3>
+          <button
+            className="px-2 py-1 text-gray-500 hover:text-gray-700"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {sidebarOpen ? "❌" : "☰"}
+          </button>
+        </div>
+        <div className="overflow-y-auto h-[calc(100vh-50px)] p-2">
+          {history.map((item, idx) => (
+            <div
+              key={idx}
+              className="border p-2 mb-2 rounded shadow-sm flex justify-between items-center"
+            >
+              <div>
+                <p className="text-sm text-gray-700">{item.text}</p>
+                <p className="text-xs text-gray-500">
+                  {new Date(item.timestamp).toLocaleString()}
+                </p>
+              </div>
+              <span
+                className={`px-2 py-1 rounded text-white text-xs ${
+                  item.sentiment === "Positive"
+                    ? "bg-green-500"
+                    : item.sentiment === "Negative"
+                    ? "bg-red-500"
+                    : "bg-yellow-500"
+                }`}
+              >
+                {item.sentiment}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
-<div
-  className="flex"
-  style={{ color: "pink", border: "1px solid white", display:"inline-flex" }}
->
-  <div>
-  <Button onClick={handleAnalyze}>Analyze</Button>
-  <Button onClick={startVoiceInput}>Speak</Button>
-  </div>
-</div>
+      {/* Main content */}
+      <div className="flex-1 p-6 flex flex-col">
+        <h1 className="text-2xl font-bold mb-4 text-center">Sentiment Analysis Tool</h1>
 
-
-      {loading && <p className="mt-4 text-center">Analyzing sentiment, please wait...</p>}
-
-      <SentimentDisplay sentiment={sentiment} topLabel={topLabel} topScore={topScore} />
-
-      {rawScores.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Detailed Scores:</h3>
-          <ul className="mb-4">
-            {rawScores.map((item, idx) => (
-              <li key={idx}>
-                {item.name}: {item.value}%
-              </li>
-            ))}
-          </ul>
-
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={rawScores}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                label
-              >
-                {rawScores.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+        <div className="flex items-center gap-2 mb-2">
+          <TextInput
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Enter text here..."
+            onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
+          />
+          <Button onClick={startVoiceInput} variant="secondary">
+            <FaMicrophone />
+          </Button>
         </div>
-      )}
 
-      {history.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-2">Recent Analyses:</h3>
-          <ul className="space-y-2">
-            {history.map((item, idx) => (
-              <li
-                key={idx}
-                className="border p-2 rounded shadow-sm flex justify-between items-center"
-              >
-                <div>
-                  <p className="text-sm text-gray-700">{item.text}</p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(item.timestamp).toLocaleString()}
-                  </p>
-                </div>
-                <span
-                  className={`px-2 py-1 rounded text-white text-xs ${
-                    item.sentiment === "Positive"
-                      ? "bg-green-500"
-                      : item.sentiment === "Negative"
-                      ? "bg-red-500"
-                      : "bg-yellow-500"
-                  }`}
+        <Button onClick={handleAnalyze} className="mb-4">
+          Analyze
+        </Button>
+
+        {loading && <p className="text-center mb-4">Analyzing sentiment...</p>}
+
+        <SentimentDisplay sentiment={sentiment} topLabel={topLabel} topScore={topScore} />
+
+        {rawScores.length > 0 && (
+          <div className="mt-4 p-4 shadow-sm rounded bg-white max-w-md">
+            <h3 className="font-semibold mb-2">Detailed Scores</h3>
+            <ul className="mb-4">
+              {rawScores.map((item, idx) => (
+                <li key={idx}>{item.name}: {item.value}%</li>
+              ))}
+            </ul>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={rawScores}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  label
                 >
-                  {item.sentiment}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                  {rawScores.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
