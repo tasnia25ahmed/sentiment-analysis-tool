@@ -5,6 +5,10 @@ import Button from "./Button";
 import SentimentDisplay from "./SentimentDisplay";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { FaMicrophone } from "react-icons/fa";
+import { FaBars, FaTimes } from "react-icons/fa"; 
+
+
+
 
 const COLORS = ["#FF4D4F", "#FAAD14", "#52C41A"];
 debugger;
@@ -20,11 +24,11 @@ const InputForm = () => {
   const [history, setHistory] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-debugger;
+ debugger;
   useEffect(() => {
     fetchHistory();
   }, []);
-debugger;
+ debugger;
   const fetchHistory = async () => {
     debugger;
     try {
@@ -34,7 +38,7 @@ debugger;
       console.error("Error fetching history:", error);
     }
   };
-debugger;
+ debugger;
   const handleAnalyze = async () => {
     if (!text.trim()) {
       setSentiment("Please enter some text to analyze.");
@@ -62,7 +66,7 @@ debugger;
       setLoading(false);
     }
   };
-debugger;
+ debugger;
   const startVoiceInput = () => {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
@@ -77,45 +81,68 @@ debugger;
       console.error("Speech recognition error:", event.error);
     };
   };
+ 
+
+
+
   
  
- return (
-    <div className="flex min-h-screen bg-gray-100">
+return (
+  <div style={{
+    height: "100vh",
+    width: "100%",
+    background: "linear-gradient(to right,#3A1C71, #D76D77,#FFAF7B)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  }}>
+   
+   
+    {/* Page Content */}
+    <div
+      className="d-flex"
+      style={{ position: "relative", zIndex: 1, height: "100%", width: "100%" }}
+    >
       {/* Sidebar */}
       <div
-        className={`bg-white shadow-lg transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-        style={{ width: "250px", zIndex: 1000 }}
+        className="shadow transition"
+        style={{
+          width: sidebarOpen ? "250px" : "0px",
+          backgroundColor: "#aca1ddff",
+          zIndex: 1000,
+           // prevent content overflow when collapsed
+          transition: "width 0.3s",
+        }}
       >
-        <div className="p-2 flex justify-between items-center border-b">
-          <h3 className="font-semibold text-lg">Recent Analyses</h3>
+        <div className="p-2 d-flex justify-content-between align-items-center border-bottom">
+          {sidebarOpen && <h3 className="fw-semibold fs-5">Recent Analyses</h3>}
           <button
-            className="px-2 py-1 text-gray-500 hover:text-gray-700"
+            className="btn btn-sm btn-light"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            {sidebarOpen ? "❌" : "☰"}
+            {sidebarOpen ? <FaTimes /> : <FaBars />}
           </button>
         </div>
-        <div className="overflow-y-auto h-[calc(100vh-50px)] p-2">
+
+        <div className="overflow-auto" style={{ height: "calc(100vh - 50px)" }}>
           {history.map((item, idx) => (
             <div
               key={idx}
-              className="border p-2 mb-2 rounded shadow-sm flex justify-between items-center"
+              className="border p-2 mb-2 rounded shadow-sm d-flex justify-content-between align-items-center"
             >
               <div>
-                <p className="text-sm text-gray-700">{item.text}</p>
-                <p className="text-xs text-gray-500">
+                {sidebarOpen && <p className="small text-dark">{item.text}</p>}
+                <p className="text-muted small">
                   {new Date(item.timestamp).toLocaleString()}
                 </p>
               </div>
               <span
-                className={`px-2 py-1 rounded text-white text-xs ${
+                className={`badge text-white ${
                   item.sentiment === "Positive"
-                    ? "bg-green-500"
+                    ? "bg-success"
                     : item.sentiment === "Negative"
-                    ? "bg-red-500"
-                    : "bg-yellow-500"
+                    ? "bg-danger"
+                    : "bg-warning"
                 }`}
               >
                 {item.sentiment}
@@ -125,18 +152,18 @@ debugger;
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 p-6 flex flex-col">
-        <h1 className="text-2xl font-bold mb-4 text-center">Sentiment Analysis Tool</h1>
+      {/* Main Content */}
+      <div className="flex-grow-1 p-4 d-flex flex-column">
+        <h1 className=" fs-3 fw-bold mb-4 text-center">Sentiment Analysis Tool</h1>
 
-        <div className="flex items-center gap-2 mb-2">
+        <div className="glass p-2 d-flex align-items-center gap-2 mb-2">
           <TextInput
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Enter text here..."
             onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
           />
-          <Button onClick={startVoiceInput} variant="secondary">
+          <Button variant="secondary" onClick={startVoiceInput}>
             <FaMicrophone />
           </Button>
         </div>
@@ -147,14 +174,23 @@ debugger;
 
         {loading && <p className="text-center mb-4">Analyzing sentiment...</p>}
 
-        <SentimentDisplay sentiment={sentiment} topLabel={topLabel} topScore={topScore} />
+        <SentimentDisplay
+          sentiment={sentiment}
+          topLabel={topLabel}
+          topScore={topScore}
+        />
 
         {rawScores.length > 0 && (
-          <div className="mt-4 p-4 shadow-sm rounded bg-white max-w-md">
-            <h3 className="font-semibold mb-2">Detailed Scores</h3>
+          <div
+            className="mt-4 p-4 shadow-sm rounded bg-white mx-auto"
+            style={{ maxWidth: "400px" }}
+          >
+            <h3 className="fw-semibold mb-2">Detailed Scores</h3>
             <ul className="mb-4">
               {rawScores.map((item, idx) => (
-                <li key={idx}>{item.name}: {item.value}%</li>
+                <li key={idx}>
+                  {item.name}: {item.value}%
+                </li>
               ))}
             </ul>
             <ResponsiveContainer width="100%" height={250}>
@@ -169,7 +205,10 @@ debugger;
                   label
                 >
                   {rawScores.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -179,7 +218,8 @@ debugger;
         )}
       </div>
     </div>
-  );
-};
+  </div>
+);
+}
 
 export default InputForm;

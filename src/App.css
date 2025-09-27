@@ -106,4 +106,12 @@ background: linear-gradient(to right, #8701fc, #ec4899, #ef4444);
   width: 100%;
   max-width: 500px;
 }
+/* Add to your CSS */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 
