@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, create_engine
+from sqlalchemy import Column, Integer, String, DateTime, JSON, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
@@ -10,6 +10,7 @@ class Review(Base):
     id = Column(Integer, primary_key=True, index=True)
     text = Column(String, nullable=False)
     sentiment = Column(String, nullable=False)
+    scores = Column(JSON)  # ✅ stores the chart data
     timestamp = Column(DateTime, default=datetime.utcnow)
 
 # Database connection
@@ -20,4 +21,3 @@ SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
-

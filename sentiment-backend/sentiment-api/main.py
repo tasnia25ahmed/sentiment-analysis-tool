@@ -2,32 +2,31 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from models import SessionLocal, Review
-
-
 from sentiment import get_sentiment
-from pydantic import BaseModel  # needed if defining ReviewRequest here
+from pydantic import BaseModel
 
 app = FastAPI()
 
 # Allow React frontend
 origins = [
     "http://localhost:3000",  # React dev server
-    # later add your production frontend URL
+    # Add production URL later
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],  
+    allow_headers=["*"],
 )
 
-# If you want to define ReviewRequest here (otherwise remove)
+# Request model
 class ReviewRequest(BaseModel):
     text: str
 
-# Dependency: get DB session
+
+# Database session dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -35,12 +34,18 @@ def get_db():
     finally:
         db.close()
 
-# POST /analyze
+
+# POST /analyze — save sentiment + scores to DB
 @app.post("/analyze")
 def analyze_review(review: ReviewRequest, db: Session = Depends(get_db)):
     sentiment, scores = get_sentiment(review.text)
 
-    new_review = Review(text=review.text, sentiment=sentiment)
+    # ✅ Save text, sentiment, and scores
+    new_review = Review(
+        text=review.text,
+        sentiment=sentiment,
+        scores=scores
+    )
     db.add(new_review)
     db.commit()
     db.refresh(new_review)
@@ -50,7 +55,8 @@ def analyze_review(review: ReviewRequest, db: Session = Depends(get_db)):
         "scores": scores
     }
 
-# GET /history
+
+# GET /history — include scores in the response
 @app.get("/history")
 def get_history(db: Session = Depends(get_db)):
     reviews = db.query(Review).order_by(Review.timestamp.desc()).limit(10).all()
@@ -58,6 +64,7 @@ def get_history(db: Session = Depends(get_db)):
         {
             "text": r.text,
             "sentiment": r.sentiment,
+            "scores": r.scores,  # ✅ Include scores
             "timestamp": r.timestamp.isoformat()
         }
         for r in reviews

@@ -2,11 +2,12 @@ import requests
 import os
 from dotenv import load_dotenv
 
-load_dotenv() 
-API_URL = "https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment"
+load_dotenv()
+API_URL = "https://router.huggingface.co/hf-inference/models/cardiffnlp/twitter-roberta-base-sentiment"
 API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")  # Set this in your environment
 
 headers = {"Authorization": f"Bearer {API_TOKEN}"} if API_TOKEN else {}
+
 
 label_map = {
     "LABEL_0": "Negative",
