@@ -11,7 +11,7 @@ const COLORS = {
   Neutral: "#FAAD14",
   Negative: "#FF4D4F",
 }
-const API_BASE = "https://sentiment-backend-g4ip.onrender.com/"; // Fixed: previously it was `const = ...` typo
+const API_BASE = "https://sentiment-backend-g4ip.onrender.com"; // Fixed: previously it was `const = ...` typo
 
 const InputForm = () => {
   const [text, setText] = useState("");
