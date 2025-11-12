@@ -31,7 +31,7 @@ HTTP Client: Axios for frontend-backend communication
 Demo
 
 A live demo of the tool is available at:
-[Your Live Demo Link Here]
+https://sentiment-frontend-l7k0.onrender.com
 
 Usage
 
