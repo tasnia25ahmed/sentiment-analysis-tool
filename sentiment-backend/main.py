@@ -9,7 +9,7 @@ app = FastAPI()
 
 # Allow React frontend
 origins = [
-    "https://sentiment-frontend-l7k0.onrender.com/",  # React dev server
+    "https://sentiment-frontend-l7k0.onrender.com",  # React dev server
     # Add production URL later
 ]
 
